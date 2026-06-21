@@ -25,8 +25,8 @@ st.markdown("""
 # Logo + Header - THIS PART NEED THE IMAGE FILE
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
-    st.image("workchop_logo_naija.png", width=200)
-
+    st.image("IMG-20260621-WA2670.jpg", width=200)
+st.markdown('<h1 style="font-size: 80px; text-align: center;">🇳🇬</h1>', unsafe_allow_html=True)
 st.markdown('<h1>WORK CHOP</h1>', unsafe_allow_html=True)
 st.markdown('<p class="slogan"><b>I tanda like rock no shaking</b> — Find Work, Chop Money.</p>', unsafe_allow_html=True)
 
