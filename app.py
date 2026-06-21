@@ -25,7 +25,7 @@ st.markdown("""
 # Logo + Header - NO MORE EMOJI
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
-    st.image("IMG.png", width=200)  # Use simple name
+    st.image("logo.png", width=200)  # Use simple name
 
 st.markdown('<h1>WORK CHOP</h1>', unsafe_allow_html=True)
 st.markdown('<p class="slogan"><b>I tanda like rock no shaking</b> — Find Work, Chop Money.</p>', unsafe_allow_html=True)
