@@ -6,7 +6,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# Naija style CSS
 st.markdown("""
 <style>
     .stApp { background: #f0fdf4; }
@@ -22,17 +21,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Logo + Header
-col1, col2, col3 = st.columns([1,2,1])
-with col2:
-    st.image("workchop_logo_naija.png", width=200)
-
+st.markdown('<h1 style="font-size: 80px; text-align: center;">🇳🇬</h1>', unsafe_allow_html=True)
 st.markdown('<h1>WORK CHOP</h1>', unsafe_allow_html=True)
 st.markdown('<p class="slogan"><b>I tanda like rock no shaking</b> — Find Work, Chop Money.</p>', unsafe_allow_html=True)
 
 st.markdown("---")
 
-# Job Categories
 st.subheader("🇳🇬 Wetin you wan do today?")
 job_type = st.selectbox(
     "Pick category:",
