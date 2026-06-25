@@ -53,7 +53,7 @@ button[data-testid="collapsedControl"] {
     color: #FFD700 !important;
 }
 
-/* REMOVE THE AUTO-HIDE */
+/* REMOVE THE AUTO-HIDE */ 
 .stApp [data-testid="stSidebar"][aria-expanded="false"] {
     display: block !important;
     transform: translateX(0px) !important;
