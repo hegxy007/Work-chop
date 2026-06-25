@@ -10,9 +10,7 @@ pydantic==2.9.2
 phonenumbers==8.13.47
  pandas 
   random
-plotly.express 
-plotly.graph_objects 
- streamlit_carousel 
+plotly =5.24.1
  io
  gspread
   sqlite3   
