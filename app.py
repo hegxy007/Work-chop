@@ -1,10 +1,18 @@
 
 
+
+
 import streamlit as st
 from datetime import datetime, timedelta
 import pandas as pd
-import random 
+import random
+import plotly.express as px
+import plotly.graph_objects as go  # This new brother wey show
+from plotly.subplots import make_subplots
+import plotly  #Any plotly anything
+from streamlit_carousel import carousel
 import io
+import gspread
 import sqlite3  # Use SQLite first, forget gspread for now
 
 
@@ -180,7 +188,19 @@ def calculate_commission(amount):
         return amount * 0.10
     else:
         return amount * 0.05
+#headded
+# WORK CHOP HEADER - LOGO VERSION
+col1, col2 = st.columns([1, 6])
+with col1:
+    try:
+        st.image("logo.png", width=70) 
+    except:
+        st.markdown("## 🔥💧")  # Fire + Water fallback
+with col2:
+    st.markdown("# WORK CHOP") 
+    st.caption("Find trusted Sabimen in Nigeria")
 
+st.markdown("---")
 # WORK CHOP UPDATE: Zero Risk Activation Logic
 def process_payment(job_id):
     job = next((j for j in st.session_state.jobs if j['id'] == job_id), None)
