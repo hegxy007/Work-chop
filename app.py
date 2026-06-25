@@ -1,4 +1,5 @@
 
+
 import streamlit as st
 from datetime import datetime, timedelta
 import pandas as pd
@@ -7,13 +8,66 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_carousel import carousel
 import io
+import gspread
+import sqlite3  # Use SQLite first, forget gspread for now
 
+
+
+
+# PAGE Config
 st.set_page_config(
     page_title="Work Chop - For Humanity, By Humanity",
     page_icon="🇳🇬",
     layout="wide",
     initial_sidebar_state="expanded"
-)
+)  # FORCE SIDEBAR OPEN - no space before this line
+
+# DATABASE - Use SQLite, no creds.json needed
+conn = sqlite3.connect('workchop.db')
+cursor = conn.cursor()
+
+# Create table if no exist
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        user_type TEXT
+    )
+''')
+conn.commit()
+
+# COMMENT OUT GSPREAD UNTIL YOU GET creds.json
+# import gspread
+# gc = gspread.service_account(filename='creds.json')
+# sheet = gc.open("WorkChop_DB").sheet1
+    # ========== 1. INIT STATE ==========
+
+# FORCE SIDEBAR OPEN - ADD THIS RIGHT AFTER set_page_config
+st.markdown("""
+<style>
+/* FORCE SIDEBAR TO STAY OPEN */
+section[data-testid="stSidebar"] {
+    display: block !important;
+    width: 21rem !important;
+    min-width: 21rem !important;
+    transform: translateX(0px) !important;
+}
+
+/* SHOW THE COLLAPSE BUTTON BUT MAKE IT GREEN */
+button[data-testid="collapsedControl"] {
+    display: block !important;
+    background-color: #14532D !important;
+    color: #FFD700 !important;
+}
+
+/* REMOVE THE AUTO-HIDE */
+.stApp [data-testid="stSidebar"][aria-expanded="false"] {
+    display: block !important;
+    transform: translateX(0px) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # LANGUAGE DICTIONARY
 LANGUAGES = {
@@ -53,7 +107,7 @@ LANGUAGES = {
         "help": "Ile-iṣẹ Iranlọwọ", "language": "Yan Ede Rẹ"
     }
 }
-
+         # ========== 1. INIT STATE ==========
 # SESSION STATE
 if 'language' not in st.session_state:
     st.session_state.language = "English"
@@ -196,6 +250,248 @@ def process_auto_release():
 if (datetime.now() - st.session_state.last_auto_release_check).seconds > 300:
     process_auto_release()
     st.session_state.last_auto_release_check = datetime.now()
+    # TOP NAVIGATION BAR - PASTE THIS ON YOUR MAIN PAGE
+# ========== INIT SESSION STATE ==========
+if 'page' not in st.session_state:
+    st.session_state.page = 'Home'
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'user_type' not in st.session_state:
+    st.session_state.user_type = None
+
+# ========== TOP NAVIGATION BAR - SHOW BASED ON LOGIN ==========
+if not st.session_state.logged_in:
+    # MODE 1: VISITOR NAV - Only show when logged out
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1:
+        if st.button("Home", use_container_width=True, key="top_home"):
+            st.session_state.page = 'Home'
+            st.rerun()
+    with col2:
+        if st.button("About Us", use_container_width=True, key="top_about"):
+            st.session_state.page = 'About'
+            st.rerun()
+    with col3:
+        if st.button("Gallery", use_container_width=True, key="top_gallery"):
+            st.session_state.page = 'Gallery'
+            st.rerun()
+    with col4:
+        if st.button("Contact", use_container_width=True, key="top_contact"):
+            st.session_state.page = 'Contact'
+            st.rerun()
+    with col5:
+        if st.button("Login", use_container_width=True, key="top_login"):
+            st.session_state.page = 'Login'
+            st.rerun()
+
+else:
+    # MODE 2: LOGGED IN NAV - Hide Home/About/Gallery
+    if st.session_state.user_type == 'client':
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            if st.button("Dashboard", use_container_width=True, key="c_dash"):
+                st.session_state.page = 'Dashboard'
+                st.rerun()
+        with col2:
+            if st.button("My Jobs", use_container_width=True, key="c_jobs"):
+                st.session_state.page = 'My Jobs'
+                st.rerun()
+        with col3:
+            if st.button("Profile", use_container_width=True, key="c_profile"):
+                st.session_state.page = 'Profile'
+                st.rerun()
+        with col4:
+            if st.button("Logout", use_container_width=True, key="c_logout"):
+                st.session_state.logged_in = False
+                st.session_state.user_type = None
+                st.session_state.page = 'Home'
+                st.rerun()
+    
+    elif st.session_state.user_type == 'admin':
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            if st.button("Dashboard", use_container_width=True, key="a_dash"):
+                st.session_state.page = 'Dashboard'
+                st.rerun()
+        with col2:
+            if st.button("Manage Users", use_container_width=True, key="a_users"):
+                st.session_state.page = 'Manage Users'
+                st.rerun()
+        with col3:
+            if st.button("Reports", use_container_width=True, key="a_reports"):
+                st.session_state.page = 'Reports'
+                st.rerun()
+        with col4:
+            if st.button("Logout", use_container_width=True, key="a_logout"):
+                st.session_state.logged_in = False
+                st.session_state.user_type = None
+                st.session_state.page = 'Home'
+                st.rerun()
+    
+    # SABIMAN NAV - ADDED THIS TO FIX LINE 358 BUG
+    elif st.session_state.user_type == 'sabiman':
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            if st.button("Dashboard", use_container_width=True, key="s_dash"):
+                st.session_state.page = 'Dashboard'
+                st.rerun()
+        with col2:
+            if st.button("Find Jobs", use_container_width=True, key="s_jobs"):
+                st.session_state.page = 'Find Jobs'
+                st.rerun()
+        with col3:
+            if st.button("My Gigs", use_container_width=True, key="s_gigs"):
+                st.session_state.page = 'My Gigs'
+                st.rerun()
+        with col4:
+            if st.button("Logout", use_container_width=True, key="s_logout"):
+                st.session_state.logged_in = False
+                st.session_state.user_type = None
+                st.session_state.page = 'Home'
+                st.rerun()
+
+# ========== PAGE CONTENT WITH REDIRECT GUARDS ==========
+if st.session_state.page == 'Home':
+    if not st.session_state.logged_in:
+        st.title("WORK CHOP - For Humanity, By Humanity")
+        st.write("Public home page")
+    else:
+        st.session_state.page = 'Dashboard'
+        st.rerun()
+
+elif st.session_state.page == 'About':
+    if not st.session_state.logged_in:
+        st.title("About Us")
+        st.write("Our story...")
+    else:
+        st.session_state.page = 'Dashboard'  # Block access after login
+        st.rerun()
+
+elif st.session_state.page == 'Gallery':
+    if not st.session_state.logged_in:
+        st.title("Gallery")
+        st.write("Public portfolio")
+    else:
+        st.session_state.page = 'Dashboard'
+        st.rerun()
+
+elif st.session_state.page == 'Dashboard':
+    if st.session_state.logged_in:
+        user_type = st.session_state.user_type or "User"
+        st.title(f"{user_type.title()} Dashboard")
+        st.success("Home/About/Gallery don hide ✅")
+    else:
+        st.session_state.page = 'Home'
+        st.rerun()
+# PAGE CONTENT - SHOW BASED ON SELECTION
+if st.session_state.page == 'Home':
+    st.markdown("""
+    <div style='text-align: center; padding: 2rem 0;'>
+        <h1 style='font-family: Space Grotesk; font-size: 3.5rem; color: #14532D; margin-bottom: 0;'>
+            WORK CHOP
+        </h1>
+        <h2 style='font-family: IBM Plex Mono; font-size: 1.2rem; color: #4A453E; letter-spacing: 2px; margin-top: 0.5rem;'>
+            FOR HUMANITY, BY HUMANITY
+        </h2>
+        <p style='font-size: 1.1rem; color: #1C1A17; margin-top: 1.5rem;'>
+            <strong>I tanda like rock no shaking</strong> - Connecting 26M+ Nigerian skilled workers with dignified jobs
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("""
+        #### **33.3% Unemployment**
+        23 million Nigerians dey jobless. But we get skilled hands everywhere.
+        """)
+    with col2:
+        st.markdown("""
+        #### **Zero Risk Activation**
+        Sabimen join FREE with NIN. No payment until you don earn. 
+        """)
+    with col3:
+        st.markdown("""
+        #### **Escrow Protected**
+        Client money dey safe. Sabiman get paid 24hrs after job completion.
+        """)
+    
+    st.markdown("---")
+    
+    st.markdown("""
+    ### **How Work Chop Dey Work**
+    
+    **For Sabimen (Workers):**
+    1. **Register FREE** - NIN verification only, no upfront fees
+    2. **Get Hired** - Clients find you based on skill + location  
+    3. **Do the Work** - Show your expertise, build your rating
+    4. **Get Paid** - Money drops in your account 24hrs after client confirms
+    
+    **For Clients:**
+    1. **Post Job FREE** - Describe wetin you need
+    2. **Pick Sabiman** - Browse verified profiles with ratings
+    3. **Pay Escrow** - Money held safe until work done
+    4. **Confirm & Release** - Approve work, sabiman gets paid automatically
+    
+    > **This is not charity. This is business with a soul.**
+    """)
+    
+elif st.session_state.page == 'About':
+    st.markdown("# **About Work Chop**")
+    st.markdown("### *The Story Behind Nigeria's Labor Revolution*")
+    
+    st.markdown("""
+    #### **The Problem We Saw**
+    Nigeria no get unemployment problem - we get **connection problem**. 
+    
+    26 million skilled workers dey the informal sector: tailors, plumbers, electricians, mechanics, carpenters. But clients no fit find them. Sabimen no fit find clients. Both sides dey suffer while middlemen chop commission.
+    
+    #### **The Solution We Built**
+    **Work Chop** is Nigeria's first **Zero Risk Activation** platform for skilled labor.
+    
+    - **NIN-Verified Profiles** - Every sabiman verified with NIMC. No fake accounts.
+    - **Escrow Protection** - Client money held safe. Sabiman paid only when work confirmed.
+    - **No Upfront Cost** - Poor sabimen fit join free. We only chop commission after you earn.
+    - **Bank-Level Security** - AES-256 encryption. Your data protected like Zenith Bank.
+    
+    #### **Our Mission**
+    > To unlock dignified employment for 26 million Nigerians in the informal sector by 2030.
+    
+    #### **Our Values**
+    1. **Humanity First** - Every sabiman deserves dignity, not exploitation
+    2. **Trust by Design** - NIN + escrow + ratings = zero fraud
+    3. **I Tanda Like Rock** - We no dey shake. Your money, your work, your reputation dey safe
+    
+    #### **The Founders**
+    Built by Nigerians, for Nigerians. We understand the hustle because we don hustle.
+    
+    **Headquarters:** 15 Awolowo Road, Ikoyi, Lagos, Nigeria
+    
+    ---
+    
+    **Join the revolution. Work Chop - For Humanity, By Humanity.**
+    """)
+    
+elif st.session_state.page == 'Gallery':
+    st.markdown("# **Work Chop Gallery**")
+    st.markdown("### *See Our Sabimen in Action*")
+    st.markdown("see your self")
+    st.info("📸 Gallery coming soon")
+    
+elif st.session_state.page == 'Contact':
+    st.markdown("# **Contact Work Chop**")
+    st.markdown("### *We dey here for you 24/7*")
+    st.write("📍 15 Awolowo Road, Ikoyi, Lagos")
+    st.write("📧 support@workchop.ng")
+    st.write("📱 +234 800 WORK-CHOP")
+    
+elif st.session_state.page == 'Help':
+    st.markdown("# **Help Center**")
+    st.markdown("### *Frequently Asked Questions*")
+    with st.expander("🔒 How does Zero Risk Activation work?"):
+        st.write("You register FREE with your NIN. No payment needed. Start earning immediately.")
 
 # CSS
 st.markdown("""
@@ -1040,3 +1336,4 @@ else:
         Sabiman 3: sabiman3@test.com / sabi123 (Not Activated - Test Zero Risk!)</p>
     </div>
     """, unsafe_allow_html=True)
+    
