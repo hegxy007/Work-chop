@@ -4,7 +4,6 @@ import streamlit as st
 from datetime import datetime, timedelta
 import pandas as pd
 import random 
-from streamlit_carousel import carousel
 import io
 import gspread
 import sqlite3  # Use SQLite first, forget gspread for now
