@@ -1108,39 +1108,6 @@ def dashboard_page():
                 client_name = st.session_state.users[job['client']]['name']
                 st.markdown(f"""<div class="available-card"><h3 style="color: white; margin: 0;">{job['title']}</h3><p style="color: #d1d5db; margin: 0.5rem 0;">From: <b>{client_name}</b> | Location: {job['location']} | Budget: <b style="color: #10b981;">₦{job['amount']:,}</b></p><p style="color: #9ca3af;">{job['desc']}</p></div>""", unsafe_allow_html=True)
               # PAYSTACK WALLET FUNDING - TEST MODE
-st.markdown("### 💰 Fund Wallet")
-with st.expander("Add Money to Wallet - Test Mode"):
-    amount = st.number_input("Enter amount (₦)", min_value=100, value=1000, step=100)
-    email = st.text_input("Email for receipt", value=st.session_state.email)
-    
-    if st.button("Pay with Paystack", type="primary"):
-        import requests, random
-        
-        # Initialize Paystack transaction
-        headers = {
-            "Authorization": f"Bearer {st.secrets['PAYSTACK_SECRET_KEY']}",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "email": email,
-            "amount": amount * 100,  # Paystack uses kobo
-            "reference": f"WC_{random.randint(10000,99999)}",
-            "callback_url": "https://work-chop.streamlit.app"  # Your live link
-        }
-        
-        response = requests.post("https://api.paystack.co/transaction/initialize", json=data, headers=headers)
-        
-        if response.status_code == 200:
-            url = response.json()['data']['authorization_url']
-            st.success("Click below to pay with TEST CARD")
-            st.markdown(f"[**Pay ₦{amount:,} Now**]({url})")
-            st.caption("Test Card: 4084084084084081 | Expiry: 12/34 | CVV: 408 | PIN: 0000")
-        else:
-            st.error("Paystack error. Check your secret key.")
-
-# Show current balance
-balance = st.session_state.get('wallet_balance', 0)
-st.metric("Wallet Balance", f"₦{balance:,}")
                 col1, col2 = st.columns(2)
                 with col1:
                     if st.button(f"✅ Accept Job", key=f"accept_{job['id']}", use_container_width=True):
