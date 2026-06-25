@@ -1,21 +1,10 @@
 
-
-
-
 import streamlit as st
 from datetime import datetime, timedelta
 import pandas as pd
 import random
-import plotly.express as px
-import plotly.graph_objects as go  # This new brother wey show
-from plotly.subplots import make_subplots
-import plotly  #Any plotly anything
-from streamlit_carousel import carousel
 import io
-import gspread
 import sqlite3  # Use SQLite first, forget gspread for now
-
-
 
 
 # PAGE Config
