@@ -4,7 +4,7 @@ import streamlit as st
 from datetime import datetime, timedelta
 import pandas as pd
 import random
-import plotly.express as px  # ← DELETE THIS LINE
+import plotly.express as px  # DELETE THIS LINE
 import plotly.graph_objects as go
 from streamlit_carousel import carousel
 import io
