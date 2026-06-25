@@ -178,16 +178,16 @@ def calculate_commission(amount):
     else:
         return amount * 0.05
 #headded
-# WORK CHOP HEADER - LOGO VERSION
-col1, col2 = st.columns([1, 6])
+# WORK CHOP HEADER - NAIJA WC LOGO LIVE
+col1, col2 = st.columns([1, 5])
 with col1:
     try:
-        st.image("logo.png", width=70) 
+        st.image("logo.png", width=80)
     except:
-        st.markdown("## 🔥💧")  # Fire + Water fallback
+        st.markdown("## 🇳🇬")  # Fallback if logo no load
 with col2:
-    st.markdown("# WORK CHOP") 
-    st.caption("Find trusted Sabimen in Nigeria")
+    st.markdown("# WORK CHOP")
+    st.caption("Find Local Services in Nigeria")
 
 st.markdown("---")
 # WORK CHOP UPDATE: Zero Risk Activation Logic
