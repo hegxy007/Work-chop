@@ -1,0 +1,18 @@
+streamlit==1.38.0
+fastapi==0.115.0
+uvicorn==0.30.6
+azure-cosmos==4.7.0
+python-dotenv==1.0.1
+requests==2.32.3
+folium==0.17.0
+streamlit-folium==0.20.0
+pydantic==2.9.2
+phonenumbers==8.13.47
+ pandas 
+  random
+plotly.express 
+plotly.graph_objects 
+ streamlit_carousel 
+ io
+ gspread
+  sqlite3   
