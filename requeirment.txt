@@ -8,9 +8,8 @@ folium==0.17.0
 streamlit-folium==0.20.0
 pydantic==2.9.2
 phonenumbers==8.13.47
- pandas 
-  random
+ pandas == 2.2.2
 plotly =5.24.1
- io
- gspread
-  sqlite3   
+ gspread ==6.1.2
+  sqlite3 
+google_auth ==2.34.0
