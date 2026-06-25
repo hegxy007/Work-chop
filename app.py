@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 import pandas as pd
 import random 
 import io
-import gspread
 import sqlite3  # Use SQLite first, forget gspread for now
 
 
