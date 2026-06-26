@@ -186,10 +186,10 @@ with col1:
     except:
         st.markdown("## 🇳🇬")  # Fallback if logo no load
 with col2:
-    st.markdown("# WORK CHOP")
-    st.caption("Find Local Services in Nigeria")
+     st.markdown("# WORK CHOP")
+     st.caption("Find Local Services in Nigeria")
 
-st.markdown("---")
+ st.markdown("---")
 # WORK CHOP UPDATE: Zero Risk Activation Logic
 def process_payment(job_id):
     job = next((j for j in st.session_state.jobs if j['id'] == job_id), None)
