@@ -178,7 +178,7 @@ def calculate_commission(amount):
     else:
         return amount * 0.05
 #headded
-# WORK CHOP HEADER - NAIJA WC LOGO LIVE
+ WORK CHOP HEADER - NAIJA WC LOGO LIVE
 col1, col2 = st.columns([1, 5])
 with col1:
     try:
