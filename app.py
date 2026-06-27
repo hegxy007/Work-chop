@@ -2,11 +2,6 @@ import streamlit as st
 from datetime import datetime, timedelta
 import pandas as pd
 import random
-import plotly.express as px
-import plotly.graph_objects as go 
-from plotly.subplots import make_subplots
-import plotly  
-import plotly as pio # Tells Plotly to render both the interactive web view and a fallback PNG
 import io
 import sqlite3  # Use SQLite first, forget gspread for now
 import requests # 1. ADD FOR PAYSTACK
