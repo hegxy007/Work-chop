@@ -2,9 +2,7 @@ import streamlit as st
 from datetime import datetime, timedelta
 import pandas as pd
 import random
-import plotly.express as px
-import plotly.graph_objects as go 
-from plotly.subplots import make_subplots
+
 import io
 import sqlite3
 
