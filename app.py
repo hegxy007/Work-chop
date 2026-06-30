@@ -4,11 +4,13 @@ import streamlit as st
 from datetime import datetime, timedelta
 import pandas as pd
 import random
-
-
+import plotly.express as px
+import plotly.graph_objects as go
+from streamlit_carousel import carousel
 import io
-
+import gspread
 import sqlite3  # Use SQLite first, forget gspread for now
+import requests # 1. ADD FOR PAYSTACK
 
 
 
@@ -183,7 +185,6 @@ def calculate_commission(amount):
         return amount * 0.10
     else:
         return amount * 0.05
-#headded
 # WORK CHOP HEADER - NAIJA WC LOGO LIVE
 col1, col2 = st.columns([1, 5])
 with col1:
@@ -196,6 +197,7 @@ with col2:
     st.caption("Find Local Services in Nigeria")
 
 st.markdown("---")
+
 # WORK CHOP UPDATE: Zero Risk Activation Logic
 def process_payment(job_id):
     job = next((j for j in st.session_state.jobs if j['id'] == job_id), None)
@@ -256,6 +258,42 @@ def process_auto_release():
 
                 process_payment(job['id'])
                 log_traffic(f"Auto-released payment for job {job['id']}")
+                # 2. ADD PAYSTACK + BANK + USSD FUNDING - FOR NAIJA PEOPLE NO CARD
+def fund_wallet_section():
+    st.markdown(f"### 💰 {t('fund_wallet')}")
+    user = st.session_state.users[st.session_state.current_user]
+    st.metric("Current Balance", f"₦{user.get('wallet_balance', 0):,}")
+    
+    tab1, tab2, tab3 = st.tabs(["💳 Card/Paystack", "🏦 Bank Transfer", "📱 USSD"])
+    
+    with tab1:
+        if "PAYSTACK_SECRET_KEY" not in st.secrets:
+            st.warning("⚠️ Admin: Add PAYSTACK_SECRET_KEY to .streamlit/secrets.toml")
+        else:
+            amount = st.number_input("Amount ₦", min_value=100, value=1000, key="ps_amt")
+            if st.button("Pay with Card", key="ps_btn"):
+                headers = {"Authorization": f"Bearer {st.secrets['PAYSTACK_SECRET_KEY']}", "Content-Type": "application/json"}
+                data = {"email": st.session_state.current_user, "amount": amount * 100, "reference": f"WC_{random.randint(10000,99999)}"}
+                try:
+                    r = requests.post("https://api.paystack.co/transaction/initialize", json=data, headers=headers)
+                    if r.status_code == 200:
+                        st.markdown(f"[**Click to Pay ₦{amount:,}**]({r.json()['data']['authorization_url']})")
+                        st.caption("Test Card: 4081 4081 4081 4081 | 12/34 | 408 | 0000")
+                    else: st.error(r.text)
+                except Exception as e: st.error(e)
+    
+    with tab2:
+        st.info("Transfer to: **Work Chop Ltd** \nAcc: 1234567890 \nBank: GTBank")
+        ref = st.text_input("Your Transfer Reference")
+        amount = st.number_input("Amount Sent ₦", min_value=100, key="bank_amt")
+        if st.button("I Have Paid"): st.success(f"✅ We go confirm ₦{amount:,} in 5 mins. Ref: {ref}")
+    
+    with tab3:
+        st.info("Dial: **`*737*1*1*1234567890#`** then enter ₦ amount")
+        ref = st.text_input("USSD Ref Number")
+        amount = st.number_input("Amount ₦", min_value=100, key="ussd_amt")
+        if st.button("Confirm USSD Payment"): st.success(f"✅ We go confirm ₦{amount:,} in 5 mins. Ref: {ref}")
+
 
 # WORK CHOP UPDATE: Run auto-release on every rerun (every 5 min)
 if (datetime.now() - st.session_state.last_auto_release_check).seconds > 300:
@@ -294,41 +332,6 @@ if not st.session_state.logged_in:
         if st.button("Login", use_container_width=True, key="top_login"):
             st.session_state.page = 'Login'
             st.rerun()
-# === PAYSTACK WALLET FUNDING - TEST MODE ===
-if st.session_state.get("role") == "Client":
-    st.markdown("### 💰 Fund Wallet")
-    with st.expander("Add Money to Wallet - Test Mode"):
-        amount = st.number_input("Enter amount (₦)", min_value=100, value=1000, step=100, key="fund_amt")
-        email = st.text_input("Email for receipt", value=st.session_state.get("email", ""), key="fund_email")
-        
-        if st.button("Pay with Paystack", type="primary", key="paystack_btn"):
-            import requests, random
-            try:
-                headers = {
-                    "Authorization": f"Bearer {st.secrets['PAYSTACK_SECRET_KEY']}",
-                    "Content-Type": "application/json"
-                }
-                data = {
-                    "email": email,
-                    "amount": amount * 100,  # Paystack uses kobo
-                    "reference": f"WC_{random.randint(10000,99999)}",
-                    "callback_url": "https://ggqr.streamlit.app"  # Your app URL
-                }
-                response = requests.post("https://api.paystack.co/transaction/initialize", json=data, headers=headers)
-                
-                if response.status_code == 200:
-                    url = response.json()['data']['authorization_url']
-                    st.success("✅ Click below to pay with TEST CARD")
-                    st.markdown(f"[**Pay ₦{amount:,} Now**]({url})")
-                    st.caption("Test Card: 4081 | Expiry: 12/34 | CVV: 408 | PIN: 0000")
-                else:
-                    st.error(f"Paystack error: {response.text}")
-            except Exception as e:
-                st.error(f"Error: {e}")
-    
-    balance = st.session_state.get('wallet_balance', 0)
-    st.metric("Wallet Balance", f"₦{balance:,}")
-# === END PAYSTACK CODE ===
 
 else:
     # MODE 2: LOGGED IN NAV - Hide Home/About/Gallery
@@ -990,7 +993,7 @@ def admin_create():
             st.session_state.users[email] = user_data
             st.success(f"✅ {role} created successfully!")
             st.balloons()
-             
+
 def admin_reports():
     st.markdown("# 📄 Generate Reports & Receipts")
     col1, col2 = st.columns(2)
@@ -1148,37 +1151,6 @@ def dashboard_page():
             for job in new_requests:
                 client_name = st.session_state.users[job['client']]['name']
                 st.markdown(f"""<div class="available-card"><h3 style="color: white; margin: 0;">{job['title']}</h3><p style="color: #d1d5db; margin: 0.5rem 0;">From: <b>{client_name}</b> | Location: {job['location']} | Budget: <b style="color: #10b981;">₦{job['amount']:,}</b></p><p style="color: #9ca3af;">{job['desc']}</p></div>""", unsafe_allow_html=True)
-                
-                   # PAYSTACK WALLET FUNDING - TEST MODE
-    if "role" in st.session_state and st.session_state.role == "Client":  # ✅ Double safe
-        st.markdown("### 💰 Fund Wallet")
-        with st.expander("Add Money to Wallet - Test Mode"):
-            amount = st.number_input("Enter amount (₦)", min_value=100, value=1000, step=100)
-            email = st.text_input("Email for receipt", value=st.session_state.email)
-            
-            if st.button("Pay with Paystack", type="primary", key="paystack_btn"):
-                import requests, random
-                headers = {
-                    "Authorization": f"Bearer {st.secrets['PAYSTACK_SECRET_KEY']}",
-                    "Content-Type": "application/json"
-                }
-                data = {
-                    "email": email,
-                    "amount": amount * 100,
-                    "reference": f"WC_{random.randint(10000,99999)}",
-                    "callback_url": "https://work-chop.streamlit.app"
-                }
-                response = requests.post("https://api.paystack.co/transaction/initialize", json=data, headers=headers)
-                if response.status_code == 200:
-                    url = response.json()['data']['authorization_url']
-                    st.success("Click below to pay with TEST CARD")
-                    st.markdown(f"[**Pay ₦{amount:,} Now**]({url})")
-                    st.caption("Test Card: 4084084084084081 | Expiry: 12/34 | CVV: 408 | PIN: 0000")
-                else:
-                    st.error("Paystack error. Check your secret key.")
-        
-                    balance = st.session_state.get('wallet_balance', 0)
-                    st.metric("Wallet Balance", f"₦{balance:,}")
                 col1, col2 = st.columns(2)
                 with col1:
                     if st.button(f"✅ Accept Job", key=f"accept_{job['id']}", use_container_width=True):
@@ -1191,7 +1163,6 @@ def dashboard_page():
                         st.session_state.jobs.remove(job)
                         st.info("Job declined")
                         st.rerun()
-                        
 
         # JOBS IN PROGRESS
         in_progress = [j for j in my_jobs if j['status'] == 'Accepted - In Progress']
@@ -1414,4 +1385,4 @@ else:
         Sabiman 3: sabiman3@test.com / sabi123 (Not Activated - Test Zero Risk!)</p>
     </div>
     """, unsafe_allow_html=True)
-    
+     
