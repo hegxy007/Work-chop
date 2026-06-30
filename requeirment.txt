@@ -1,15 +1,11 @@
-streamlit==1.38.0
-fastapi==0.115.0
-uvicorn==0.30.6
-azure-cosmos==4.7.0
-python-dotenv==1.0.1
-requests==2.32.3
-folium==0.17.0
-streamlit-folium==0.20.0
-pydantic==2.9.2
-phonenumbers==8.13.47
- pandas == 2.2.2
-plotly==5.24.1
- gspread ==6.1.2
-google_auth ==2.34.0
-requests==2.32.3
+ streamlit
+ datetime 
+ pandas 
+ random
+ plotly.express 
+ plotly.graph_objects
+ streamlit_carousel 
+ io
+ gspread
+ sqlite3  
+ requests 
