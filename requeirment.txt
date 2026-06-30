@@ -2,9 +2,7 @@
  datetime 
  pandas 
  random
- plotly.express 
- plotly.graph_objects
- streamlit_carousel 
+ plotly
  io
  gspread
  sqlite3  
