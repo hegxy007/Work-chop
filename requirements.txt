@@ -1,0 +1,9 @@
+streamlit
+ datetime 
+ pandas 
+ random
+ plotly
+ io
+ gspread
+ sqlite3  
+ requests 
